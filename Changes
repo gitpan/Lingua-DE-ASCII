@@ -1,5 +1,11 @@
 Revision history for Perl extension Lingua::DE::ASCII.
 
+0.11  Tue Sep 02, 2003
+        - fixed bug for the name of
+          * "Boegehold"
+          => perhaps not that important, but the street I'm living has his name
+          :-)
+
 0.10  Thu Aug 19, 2003
         - fixed behaviour of words like
           * "IssueType" 

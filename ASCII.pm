@@ -11,7 +11,7 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw(to_ascii to_latin1);
 our %EXPORT_TAGS = ( 'all' => [ @EXPORT ]);
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 our %ANSI_TO_ASCII_TRANSLITERATION = (qw(
         ¡ !
@@ -932,6 +932,7 @@ sub to_latin1($) {
     s/müzzi/muezzi/g;
     s/pösy/poesy/g;
     s/(?<=[Tt]omat)ö/oe/g;
+    s/(?<=B)ö(?=gehold)/oe/g;
     return $_;
 }
 
