@@ -1,5 +1,9 @@
 Revision history for Perl extension Lingua::DE::ASCII.
 
+0.05  Mon May 05, 2003
+        - enabled that every printable ANSI character
+          (chr(160) .. chr(255)) results in an non-empty ASCII string
+
 0.04  Mon Apr 28, 2003
         - fixed bug: Module died if ue and ß had been in one string passed to
           to_latin1

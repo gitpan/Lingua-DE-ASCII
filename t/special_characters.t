@@ -22,6 +22,16 @@ while (<DATA>) {
     $iso_text_from_iso eq $_             or diag("to_latin1(latinstr):\n $_ => $iso_text_from_iso"),fail,exit;
 }
 
+foreach (160 .. 255) {   # printable ANSI character codes
+    my $ansi_char = chr($_);
+    my $ascii_representation = to_ascii($ansi_char);
+    unless($ascii_representation) {
+        diag("ascii representation of code $_ ('$ansi_char' fails");
+        fail;
+        exit;
+    }
+}
+
 ok("Special characters could be translated without errors");
 
 1;

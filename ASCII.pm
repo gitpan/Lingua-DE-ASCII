@@ -11,97 +11,117 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw(to_ascii to_latin1);
 our %EXPORT_TAGS = ( 'all' => [ @EXPORT ]);
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
-my %ascii = (qw(
-        À A
-		Á A
-		Â A
-		Ã A
-		Ä Ae
-		Å A
-		Æ Ae
-		Ç C
-		È E
-		É E
-		Ê E
-		Ë E
-		Ì I
-		Í I
-		Î I
-		Ï I
-		Ð D
-		Ñ N
-		Ò O
-		Ó O
-		Ô O
-		Õ O
-		Ö Oe
-		× x
-		Ø Oe
-		Ù U
-		Ú U
-		Û U
-		Ü Ue
-		Ý Y
-		Þ Th
-		ß ss 	
-		à a
-		á a
-		â a
-		ã a
-		ä ae
-		å a
-		æ ae
-		ç c
-		è e
-		é e
-		ê e
-		ë e
-		ì i
-		í i
-		î i
-		ï i
-		ð p
-		ñ n
-		ò o
-		ó o
-		ô o
-		õ o
-		ö oe
-		÷ o
-		ø oe 
-		ù u
-		ú u
-		û u
-		ü ue
-		ý y
-		þ th
-		ÿ y
+our %ANSI_TO_ASCII_TRANSLITERATION = (qw(
+        ¡ !
+        ¢ ct
+        £ Lb
+        ¤ EUR
+        ¥ Yen
+        ¦ S
+        § §
+        ¨ s
+        ª a
+        « <<
+        ¬ --|
+        ­ -
+        ¯ -
+        ° °
 		± +-
 		² ^2
 		³ ^3
-		µ ue
-		¶ P
-		· .
-		¹ ^1
         » >>
-        « <<
+		¼ 1/4
+        ½ 1/2
+        ¾ 3/4
+        ¿ ?
+        · .
+		¹ ^1
+        º °
+		á a
+		Á A
+		à a
+        À A
+		â a
+		Â A
+		å a
+		Å A
+		ã a
+		Ã A
+		ä ae
+		Ä Ae
+		æ ae
+		Æ Ae
+		ç c
+		Ç C
+		Ð D
+		ð p
+		é e
+		É E
+		è e
+		È E
+		ê e
+		Ê E
+		ë e
+		Ë E
+		í i
+		Í I
+		ì i
+		Ì I
+		î i
+		Î I
+		ï i
+		Ï I
+		ñ n
+		Ñ N
+		÷ o
+		ó o
+		Ó O
+		ò o
+		Ò O
+		ô o
+		Ô O
+		õ o
+		Õ O
+		ö oe
+		Ö Oe
+		ø oe 
+		Ø Oe
+		¶ P
+		ß ss 	
+		µ ue
+		ú u
+		Ú U
+		ù u
+		Ù U
+		û u
+		Û U
+		ü ue
+		Ü Ue
+		× x
+		ý y
+		Ý Y
+		ÿ y
+		þ th
+		Þ Th
         ),
 	     ("´" => "'",
 	      "¸" => ",",
           "®" => "(R)",
-          "©" => "(C)")
+          "©" => "(C)",
+          chr(160) => ' ')
     );
 
 # remove all unknown chars
-$ascii{$_} = '' foreach (grep {!defined($ascii{$_})} map {chr} (128..255));
+$ANSI_TO_ASCII_TRANSLITERATION{$_} = '' 
+    for (grep {!defined($ANSI_TO_ASCII_TRANSLITERATION{chr $_})} (128..255));
 
 my $non_ascii_char = join("", map {chr} (128..255));
 
 sub to_ascii($) {
     my $text = shift or return;
-    $text =~ s/([$non_ascii_char])/$ascii{$1}/eg;
+    $text =~ s/([$non_ascii_char])/$ANSI_TO_ASCII_TRANSLITERATION{$1}/eg;
     return $text;
 }
 
@@ -869,6 +889,36 @@ say.
 Please note that both methods take only one scalar as argument and 
 not whole a list.
 
+=head2 to_ascii($string)
+
+The C<to_ascii> method is just simple. It replaces each printable ANSI character
+(codes 160..255) with a (hopefully) sensfull ASCII representation (might be more
+than one character). The ANSI character with codes 128..160 are not printable
+and they are removed by default.
+The transliteration is defined with the global
+C<%Lingua::DE::ASCII::ANSI_TO_ASCII_TRANSLITERATION>
+variable.
+You can change this variable if you want to change the transliteration
+behaviour.
+
+=head2 to_latin1($string)
+
+The C<to_latin1> method is very complex (more than 700 lines of code). It
+retranslates 7-bit ASCII representations into a reasonable german ANSI
+representation. Thus it changes mainly 'ae' to 'ä', 'oe' to 'ö', 'ue' to 'ü',
+'ss' to 'ß'. It also changes some other characters, e.g. '(C)' to '©' or in
+words like 'Crepe' it also restores the really writing 'Crêpe'.
+
+Of course, the method only tries to change where it should. That
+explains the enormous complexity of this method, as it tries to solve a hard
+linguistic problem with a bit logic and many regular expressions (please also
+look to L<BUGS> if you are interested in known problems).
+
+At the moment you can't change the behaviour of the C<to_latin1> method (e.g.
+switching from the new german spelling to the old one), and I'm not sure whether
+I will enable it. Please inform me, if you feel that it would be important or
+much convenient in a case.
+
 =head2 EXPORT
 
 to_ascii($string)
@@ -886,7 +936,7 @@ Also, it's  hard to find the right spelling for the prefixes "miss-" or "miß-".
 In doubt I tried to use to more common word and in even still a doubt the
 program tries to be conservative, that means it prefers not to translate to an
 umlaut. Reason is that the text is still readable with one "ae","oe","ue" or
-"ss" to much, but a wrong "ä", "ö", "ü" or "ß" can make it very unreadable.
+"ss" too much, but a wrong "ä", "ö", "ü" or "ß" can make it very unreadable.
 
 I tried it with a huge list of german words, but please tell me if you find a bug.
 
@@ -895,8 +945,9 @@ This module is intended for ANSI code that is e.g. different from windows coding
 Misspelled words will create a lot of extra mistakes by the program.
 In doubt it's better to write with new Rechtschreibung.
 
-The C<to_latin1> method is not very quick,
-it's programmed to handle as many exceptions as possible.
+The C<to_latin1> method is not very quick (but quick enough to work
+interactively with text files of about 20 KB).
+It's programmed to handle as many exceptions as possible.
 
 I avoided localizations for character handling
 (thus it should work on every computer),
@@ -904,9 +955,23 @@ but the price is that in some rare cases of words with multiple umlauts
 (like "Häkeltülle") some buggy conversions can occur.
 Please tell me if you find such words.
 
+=head1 TESTS
+
+The test scripts (called by e.g. C<make test>) need a long time.
+The reason is that I test it with a huge german word list. Normally you can skip
+this test if there is no failing in the first few seconds.
+
+There are two major reasons why I added so many words to test even to the CPAN
+release. On the one hand, I wanted to give you a chance to detect strange
+behaviour under uncommon circumstances. (I haven't test it under a non-german
+locale based operation system e.g.) On the other hand, I also wanted you to give
+a chance to detect yourself whether a C<to_latin1> result is a bug or a feature.
+(Just search through the content of the test files to determine whether a
+strange looking word is tested for and thus wanted).
+
 =head1 AUTHOR
 
-Janek Schleicher, <bigj@kamelfreund.de>
+Janek Schleicher, E<lt>bigj@kamelfreund.deE<gt>
 
 =head1 SEE ALSO
 
