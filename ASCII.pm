@@ -11,7 +11,7 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw(to_ascii to_latin1);
 our %EXPORT_TAGS = ( 'all' => [ @EXPORT ]);
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 our %ANSI_TO_ASCII_TRANSLITERATION = (qw(
         ¡ !
@@ -120,7 +120,8 @@ $ANSI_TO_ASCII_TRANSLITERATION{$_} = ''
 my $non_ascii_char = join("", map {chr} (128..255));
 
 sub to_ascii($) {
-    my $text = shift or return;
+    my $text = shift;
+    return unless defined $text;
     $text =~ s/([$non_ascii_char])/$ANSI_TO_ASCII_TRANSLITERATION{$1}/eg;
     return $text;
 }
@@ -199,7 +200,8 @@ my $town_with_o = qr/[Kk]air|
                      [Tt]oki/x;
                      
 sub to_latin1($) {
-    local $_ = shift or return;
+    local $_ = shift;
+    return unless defined;
 
 	if (/[Aa]e/) {
 	    s/ (?<! [Gg]al)               # Galaempfänge
@@ -482,7 +484,7 @@ sub to_latin1($) {
             s/(?<=$consonant)ß(?=$consonant|y)/ss/g;
             s/(?<=[^i]e)ß(?=en)/ss/g;
             s/(?<=[Aa]u)ß(?=end(?!i)|etz)/ss/g;
-            s/(?<!ä)uß(?=el|lig)/uss/;  # Fussel
+            s/(?<!ä)uß(?=el|lig)/uss/g;  # Fussel
             s/(?<=[gG]lo)ß/ss/g;
             s/(?<=sa)ß(?=in)/ss/g;
             s/(?<=M[aou])ß(?=$vocal)/ss/g;  # Massai, Massaker, Massel, Mossul, Musselin
@@ -493,7 +495,7 @@ sub to_latin1($) {
         
         s/($prefix)?scho(ss|ß)/$1 ? "$1schoss" : "schoß"/ge;
 	}
-    
+
     # symbols
     s/\(R\)/®/g;
     s/\(C\)/©/g;
@@ -712,7 +714,7 @@ sub to_latin1($) {
     s/(?<=\b[Mm]u)ss(?=t?\b)/ß/g;
     s/mech(?=e|s?t)/mèch/g;
     s/metallise/métallisé/g;
-    s/la(\W+)la/là$1là/g;
+    s/(?<![\wäöüß])la([\s[:punct:]]+)la(?![\wäöüß])/là$1là/g;
     s/(?<=\b[Oo]l)e\b/é/g;
     s/peu(\W+)a(\W+)peu/peu$1à$2peu/g;
     s/reussisch/reußisch/g;
@@ -727,8 +729,8 @@ sub to_latin1($) {
     s/Angström/Ångström/g;
     s/Egalite/Égalité/g;
     s/(?<=[Ll]and)buße/busse/g;
-    s/\ba(?=\W+(?:condition|deux mains|fonds perdu|gogo|jour|la))/à/g;
-    s/a discretion/à discrétion/g;
+    s/\b(?<![ÄÖÜäöüß])a(?=\W+(?:condition|deux mains|fonds perdu|gogo|jour|la))/à/g;
+    s/(?<![\wÄÖÜäöüß])a discretion/à discrétion/g;
     s/(?<=[Bb]ai)ß(?=e)/ss/g;
     s/(?<=[Hh]au)ß(?=e)/ss/g;
     s/\bue\./ü./g;
@@ -835,7 +837,7 @@ sub to_latin1($) {
     s/ongrün/ongruen/g;
     s/tünte/tuente/g;
     s/tülle/tuelle/g;
-    s/([\w äöü ÄÖÜ ß]+t)üll/$1 eq lc($1) ? "$1uell" : "$1üll"/gex; #eventuell != Häkeltüll    
+    s/([\wäöüÄÖÜß]+t)üll/$1 eq lc($1) ? "$1uell" : "$1üll"/gex; #eventuell != Häkeltüll    
     s/Eventüll/Eventuell/g;
     s/Langü/Langue/g;
     s/Manül/Manuel/g;
@@ -914,6 +916,12 @@ explains the enormous complexity of this method, as it tries to solve a hard
 linguistic problem with a bit logic and many regular expressions (please also
 look to L<BUGS> if you are interested in known problems).
 
+It's quicker to let C<to_latin1> work on a big (even multiline) string than 
+to make a lot of callings with little strings (like lines or words). The reason is that the
+method works with a lot of regular expressions (as nearly every line of code
+contains a regexp). As Perl is very good to optimize them especially for long
+strings, you can gain a good speed advantage if you need it.
+
 At the moment you can't change the behaviour of the C<to_latin1> method (e.g.
 switching from the new german spelling to the old one), and I'm not sure whether
 I will enable it. Please inform me, if you feel that it would be important or
@@ -946,7 +954,7 @@ Misspelled words will create a lot of extra mistakes by the program.
 In doubt it's better to write with new Rechtschreibung.
 
 The C<to_latin1> method is not very quick (but quick enough to work
-interactively with text files of about 20 KB).
+interactively with text files of about 100 KB).
 It's programmed to handle as many exceptions as possible.
 
 I avoided localizations for character handling
@@ -959,12 +967,15 @@ Please tell me if you find such words.
 
 The test scripts (called by e.g. C<make test>) need a long time.
 The reason is that I test it with a huge german word list. Normally you can skip
-this test if there is no failing in the first few seconds.
+this test if there is no failing in the first few seconds. However, the tests
+also have a progress bar, so that you can see the advances :-)
 
 There are two major reasons why I added so many words to test even to the CPAN
 release. On the one hand, I wanted to give you a chance to detect strange
 behaviour under uncommon circumstances. (I haven't test it under a non-german
-locale based operation system e.g.) On the other hand, I also wanted you to give
+locale based operation system e.g. and I have also included that words are tests
+under a random environment to find out unexpected errors) 
+On the other hand, I also wanted you to give
 a chance to detect yourself whether a C<to_latin1> result is a bug or a feature.
 (Just search through the content of the test files to determine whether a
 strange looking word is tested for and thus wanted).

@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Lingua::DE::ASCII;
-use Test::More tests => 1;
+use Test::More tests => 186;
 
 use strict;
 use warnings;
@@ -17,22 +17,20 @@ while (<DATA>) {
     my $ascii_text        = to_ascii($_);  
     my $iso_text          = to_latin1($ascii_text);
     my $iso_text_from_iso = to_latin1($_);
-    $ascii_text !~ /[$non_ascii_chars]/o or diag("to_ascii:  $_ => $ascii_text"),fail,exit;
-    $iso_text          eq $_             or diag("to_latin1:\n$_ =>\n$ascii_text =>\n$iso_text"),fail,exit;
-    $iso_text_from_iso eq $_             or diag("to_latin1(latinstr):\n $_ => $iso_text_from_iso"),fail,exit;
+    ok defined($ascii_text) or diag("Not defined to_ascii('$_')");
+    ok defined($iso_text)   or diag("Not defined to_latin1('$_')");
+    ok defined($iso_text_from_iso) or diag("Not defind to_latin1('$ascii_text')");
+    ok $ascii_text !~ /[$non_ascii_chars]/o or diag("to_ascii:  $_ => $ascii_text");
+    is $iso_text, $_          or diag("to_latin1:\n$_ =>\n$ascii_text =>\n$iso_text");
+    is $iso_text_from_iso, $_ or diag("to_latin1(latinstr):\n $_ => $iso_text_from_iso");
 }
 
 foreach (160 .. 255) {   # printable ANSI character codes
     my $ansi_char = chr($_);
     my $ascii_representation = to_ascii($ansi_char);
-    unless($ascii_representation) {
+    ok length(to_ascii($ansi_char)) or 
         diag("ascii representation of code $_ ('$ansi_char' fails");
-        fail;
-        exit;
-    }
 }
-
-ok("Special characters could be translated without errors");
 
 1;
 
@@ -48,3 +46,7 @@ Er sagte den Eltern etwas Verbindliches, so gut er es in der ersten Bestürzung a
 »Ich weiß nicht,« entgegnete die Tochter, »ob er auf der Universität fleißig gewesen; aber ich weiß, dass er wenigstens mit guten Herzen ging, sich für eine heilige Sache zu opfern.«
 »Komm mir doch nicht immer mit deiner heiligen Sache und dergleichen!« rief Herr Bantes.
 Grüßen -- hier ist nur wichtig, dass ein ue mit einem sz vorkommt, da dies einmal einem eingebauten Bug entsprach
+0
+
+Eine einfache Null oder ein Leerstring dürfen natürlich nicht zu einem undef
+werden, leider war genau das mal ein Bug!

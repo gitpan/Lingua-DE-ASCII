@@ -5,7 +5,10 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     'NAME'		=> 'Lingua::DE::ASCII',
     'VERSION_FROM'	=> 'ASCII.pm', # finds $VERSION
-    'PREREQ_PM'		=> {Test::More => 0}, 
+    'PREREQ_PM'		=> {
+        Test::More => 0,
+        Term::ProgressBar => 0
+    }, 
     ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
       (AUTHOR     => 'Janek Schleicher <bigj@kamelfreund.de>') : (),
        ABSTRACT   => 
