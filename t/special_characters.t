@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Lingua::DE::ASCII;
-use Test::More tests => 186;
+use Test::More tests => 204;
 
 use strict;
 use warnings;
@@ -50,3 +50,6 @@ Grüßen -- hier ist nur wichtig, dass ein ue mit einem sz vorkommt, da dies einma
 
 Eine einfache Null oder ein Leerstring dürfen natürlich nicht zu einem undef
 werden, leider war genau das mal ein Bug!
+a language
+(war auch mal ein Bug)
+one loss, some wins

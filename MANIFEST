@@ -8,6 +8,7 @@ t/special_characters.t
 t/words_with_umlaut_and_ß.t
 t/to_ascii.t
 t/to_latin1.t
+t/only_ascii.t
 
 t/words_with_foreign.dat
 t/words_with_ä.dat

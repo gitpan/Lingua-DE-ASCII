@@ -19,7 +19,7 @@ chomp( my @all_words = <> );
 my $progress    = eval {
     require Term::ProgressBar;
     Term::ProgressBar->new({
-       name  => 'Words testet from the big dictionary',
+       name  => 'Words tested from the big dictionary',
        count => scalar(@all_words) / CHUNK_SIZE,
        ETA   => 'linear'
     });

@@ -11,7 +11,7 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw(to_ascii to_latin1);
 our %EXPORT_TAGS = ( 'all' => [ @EXPORT ]);
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 our %ANSI_TO_ASCII_TRANSLITERATION = (qw(
         ¡ !
@@ -764,12 +764,13 @@ sub to_latin1($) {
     s/Angström/Ångström/g;
     s/Egalite/Égalité/g;
     s/(?<=[Ll]and)buße/busse/g;
-    s/\b(?<![ÄÖÜäöüß])a(?=\W+(?:condition|deux mains|fonds perdu|gogo|jour|la))/à/g;
+    s/\b(?<![ÄÖÜäöüß])a(?=\W+(?:condition|deux mains|fonds perdu|gogo|jour|la)\b)/à/g;
     s/(?<![\wÄÖÜäöüß])a discretion/à discrétion/g;
     s/(?<=[Bb]ai)ß(?=e)/ss/g;
     s/(?<=[Hh]au)ß(?=e)/ss/g;
     s/\bue\./ü./g;
     s/überfloß/überfloss/g;
+    s/\bloß(?!\w)/loss/g;
     s/Ächm/Aechm/g;  # e.g. Aechmea
     s/(?<=[Aa]n)ä(?=ro)/ae/g;
     s/präter/praeter/g;

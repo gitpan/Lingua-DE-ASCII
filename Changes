@@ -1,5 +1,10 @@
 Revision history for Perl extension Lingua::DE::ASCII.
 
+0.08  Thu May 20, 2003
+        - fixed bug "a language" => "‡ language"
+        - changed behaviour for "loss" (engl.) != "loﬂ",
+          now the english word is preferenced
+
 0.07  Thu May 13, 2003
         - removed forced dependency of Term::ProgressBar
           (allthough, it's still recommended)
