@@ -11,7 +11,7 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw(to_ascii to_latin1);
 our %EXPORT_TAGS = ( 'all' => [ @EXPORT ]);
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 our %ANSI_TO_ASCII_TRANSLITERATION = (qw(
         ¡ !
@@ -117,37 +117,41 @@ our %ANSI_TO_ASCII_TRANSLITERATION = (qw(
 $ANSI_TO_ASCII_TRANSLITERATION{$_} = '' 
     for (grep {!defined($ANSI_TO_ASCII_TRANSLITERATION{chr $_})} (128..255));
 
-my $non_ascii_char = join("", map {chr} (128..255));
-
 sub to_ascii($) {
     my $text = shift;
     return unless defined $text;
-    $text =~ s/([$non_ascii_char])/$ANSI_TO_ASCII_TRANSLITERATION{$1}/eg;
+    $text =~ s/([\200-\377])/$ANSI_TO_ASCII_TRANSLITERATION{$1}/g;
+                #\octal => \200 = 128, \377 => 255
     return $text;
 }
 
-my %mutation = qw(ae ä
-		  Ae Ä
-		  oe ö
-		  Oe Ö
-		  ue ü
-		  Ue Ü);
+my %mutation = qw(
+    ae ä
+    Ae Ä
+    oe ö
+    Oe Ö
+    ue ü
+    Ue Ü
+);
 
 my $vocal = qr/[aeiouäöüAEIOUÄÖÜ]/;
 my $consonant = qr/[bcdfghjklmnpqrstvwxzBCDFGHJKLMNPQRSTVWXZ]/;
 my $letter = qr/[abcdefghijklmnopqrstuvwxyzäöüABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ]/;
 
-my $prefix = qr/(?:[Aa](?:[nb]|u[fs]|bend)|
-                   [Bb]e(?:reit|i||isammen|vor|)|
+my $prefix = qr/(?=[\wÄÖÜäöü]\w)   # to improve speed
+
+                (?:[Aa](?:[nb]|u[fs]|bend)|
+                   [Bb]e(?:reit|i|isammen|vor|)|
                    [Dd](?:a(?>für|neben|rum|r|)|
                        icke?|
                        rin|
                        urch|
                        rei
                     )|
-                   [Ee]in|
-                   [Ee]nt|
-                   [Ee]r|
+                   [Ee](?:r|
+                          in|
+                          nt|
+                    )|
                    [Ff]e(?:hl|st)|
                    [Ff]rei|
                    (?:[Gg](?:erade|
@@ -215,21 +219,28 @@ sub to_latin1($) {
            (?<! [Mm]eg)
            (?<!  Pent)                # upper case, because of Gruppentäter
            (?<! [Ss]of)               # Sofaecke
+           
            ae
+           
+           (?=[\wß\.])                     # no ä at the end of a word
+           
            (?!rleb)                   # e.g. Ahaerlebnis
            (?!rreg[^i])               #      Malariaerreger
-           (?=[\wß])                     # no ä at the end of a word
            (?!n\b)                    # even not if in plural
            (?!pid)                    # Choleraepidemie
            (?!in)                     # Kameraeinstellung
            (?!lit)                    # dingsda-elit
            (?!lem)                    # ...element
      	 /ä/gx;
+
         s/(?<=[rtz])ae(?=n\b)/ä/g;                # Eozän, Kapitän, Souverän
+        
         s/phorae/phorä/g;             # Epiphorä
         s/kenae/kenä/g;               # Mykenä
         s/ovae\b/ovä/g;
+        
         s/($town_with_a)är/$1aer/g;
+        
         s/(?<=[mr])ä(?=ls?\b|li)/ae/g; # Mariä
         s/(?<=\b[Pp]r)ae/ä/g;         # Prä...
         s/(?<=bd)ae(?=n)/ä/g;         # Molybdän
@@ -247,7 +258,7 @@ sub to_latin1($) {
           )
          /ae/gx; 
         
-        s/\bAe (?!r[oiu])/Ä/gx;         # Ae at beginning of a word, like Aerobic != Ära, Ären
+        s/\bAe(?!r[oiu])/Ä/gx;         # Ae at beginning of a word, like Aerobic != Ära, Ären
     }
 
 	if (/[Oo]e/) {
@@ -259,20 +270,30 @@ sub to_latin1($) {
 	      (?<! iez)                  # Piezoelektronik
 		  (?<! [Tt]herm)                 # Thermoelektrizität
           (?<! [Bb]i)                # Bio...
-          (?<!  ktr)                 # Elektro..., 
+          (?<!  [kc]tr)                 # Elektro..., 
           (?<! [Gg]astr)               
           (?<! [Mm]ikr)              # Mikro...
+          (?<! [Ff]err)              # ferro
           (?<! [Rr]homb)
           (?<! [Tt]rapez)
-	      ( [oO] e )
-	      (?! u)
+          (?<! [Hh]ydr)              # Hydro-...
+	      (?<! \b[Cc])               # coeditor or so
+          (?<! \b[Ss]h)                # must be English
+          (?<! c)                    # cö doesn't exist in German
+          ( [oO] e )
+	      (?=[\wß\.])                     # ö not at the end of words
+          (?! [uy])
           (?!ffi[^gn])                     # Koeffizent  != Höffige, Schöffin, ...effekt
           (?!ffek)                   # ..effekt
           (?!rot)                    # örot
-          (?!lem)                    # element
+          (?!le[cm])                    # element
           (?!rgo)                    # ergometer
           (?!mpf)                    # empfang
-    	 /$mutation{$1}/egx;
+          (?!ia)                     # typical for latin words e.g. pharmacopoeia
+          (?!last)                   # elastic
+          (?![fv]sk[iy])             # Dostoevsky e.g.
+          (?! c$vocal)               # economic, ...
+         /$mutation{$1}/egx;
          
          s/($town_with_o)ör/$1oer/g;
 	 }
@@ -292,11 +313,16 @@ sub to_latin1($) {
     	   )
            (?<![Ss]tat)              # Statue
            (?<!x)                    # Sexuelle
+           (?<![Cc]r)
            ( [uU] e )
            (?= [\wß\-])                   # no ü at the end of a word
-	       (?! i)                    # Zueilende - Ü-...
+	       (?! [iy])                    # Zueilende - Ü-...
            (?! llst\w)                 # Spirituellste
-         /$mutation{$1}/egx;
+           (?! nce)                    # influence e.g.
+           (?! ntia)
+           (?! s?day)                  # English days
+           (?! some)                   # ...
+          /$mutation{$1}/egx;
          
         s/(?<=[Zz])ue(?=g | n[dfgs] | c[hk] | be[lr] | rn[^t] | ri?ch | bl)/ü/gx; 
         s/(?<=z)ue(?=rnte?[mnrs]?t?\b)/ü/g;
@@ -305,8 +331,8 @@ sub to_latin1($) {
         s/(?<=ga)ü(?=r(in)?)\b/ue/g;      # ...gauer like Argauer, Thurgauer, ...
          
         {no warnings;
-         s/((?:${prefix}|en)s)?(([tT])ün(de?|\b))(?!chen|lein|lich)
-          /$1 ? "$1$2" : "$3uen$4"/xgeo;# Großtuende, but abstünde, Stündchen
+            s/((?:${prefix}|en)s)?(([tT])ün(de?|\b))(?!chen|lein|lich)
+             /$1 ? "$1$2" : "$3uen$4"/xgeo;# Großtuende, but abstünde, Stündchen
         }
         s/($prefix s? t)ü(r(ische?[mnrs]?|
                            i?[ns](nen)?)?\b)/$1ue$2/gx;
@@ -320,7 +346,8 @@ sub to_latin1($) {
         s/eürt/euert/g;   # geneuert
         s/reü(?=[nv]|s?t)/reue/g;   # reuen
         
-        s/([Au]ssen|
+        s/
+          ([Au]ssen|
            [Dd]oppel|
            [Dd]reh|
            [Ee]ingangs|
@@ -357,7 +384,8 @@ sub to_latin1($) {
       	   (?! isch)                          # Russisch
            (?! land)                          # Rußland
            (?! tau)
-           (?! o)
+           (?! [oy])
+           (?! ia)
           /ß/gx;
           
          # ss => ß with many exceptions
@@ -368,17 +396,17 @@ sub to_latin1($) {
            (?<! su)
            (?<! [bBdDfFhgGHkKlLmMnNpPrRsStTuUvVwWzZ] i )   # 'wissen', -nisse,
            (?<! [dgsklnt] )
-           (?<! [bBdDfFgGhHiIjJkKnNtTwWlLpP] a )     # is a short vocal
+           (?<! [bBdDfFgGhHiIjJkKnNtTwWlLpPvV] a )     # is a short vocal
            (?<! (?<![Ss]t) (?<![fF]) [rR]a)                # Rasse != Straße, fraßen
            (?<! [Qq]u a)
            (?<! [bBfFgGhHlLnNpPsSwW] ä)          # (short vocal) Ablässe, 
-           (?<! [cCdDfFgGhHjJlLmMnNpPrsStTwWzZ] e )           # is very short vocal
+           (?<! [cCdDfFgGhHjJlLmMnNpPrsStTvVwWzZ] e )           # is very short vocal
            (?<! sae)                             # Mensaessen
            (?<! ion )                            # Direktionssekretärin
            (?<! en )                             # dingenssachen 
            (?<! [fFhHoO] l o)
            (?<! (?<![gG]) [rR] o)                # Ross-Schlächter, but Baumgroße          
-           (?<! [bBdDgGkKnNpPzZ] [oö])
+           (?<! [bBdDgGkKmMnNpPzZ] [oö])
            (?<! [sS]chl ö)
            (?<! [bBkKuU]e)                       # Kessel
            (?<! [yj])
@@ -399,6 +427,7 @@ sub to_latin1($) {
            (?! te[pu])   # ...steppe, ...steuern
            (?! eins?\b)   # ...-sein
            (?! eit)
+           (?! ett)
            (?! i[vl])    # Massiv, Fossil
            (?! l?ich)  # grässlich  ...sicherung
 	       (?! äge)   # Kreissäge
@@ -419,7 +448,8 @@ sub to_latin1($) {
            (?! upp)   # ...-suppe
            (?! anc) # Renaissance
            (?! egn)  # ...-segne
-	      /ß/gxo;
+	       (?! eur)  # Connosseur or so
+          /ß/gxo;
           
           s/(?<= [AaEe]u)                        # draußen
 	        ss 
@@ -487,7 +517,12 @@ sub to_latin1($) {
             s/(?<!ä)uß(?=el|lig)/uss/g;  # Fussel
             s/(?<=[gG]lo)ß/ss/g;
             s/(?<=sa)ß(?=in)/ss/g;
-            s/(?<=M[aou])ß(?=$vocal)/ss/g;  # Massai, Massaker, Massel, Mossul, Musselin
+            s/(?<=\b[Mm][aou])
+              ß
+              (?!et)         # maßet
+              (?=$vocal$consonant|[ae][iy]|eu)
+             /ss/gx;  # Massai, Massaker, Massel, Mossul, Musselin
+            s/Maße/Masse/g;
             s/maß(?=el|ak|ig)/mass/g;
             s/\bmaß(?=en\w)/mass/g;
             s/((?:\b|$prefix)flo)ß/$1ss/g;
@@ -516,7 +551,7 @@ sub to_latin1($) {
     s/([aA])pres/$1près/g;
     s/Apero/Apéro/g;
     s/Aragon/Aragón/g;
-    s/deco/déco/g;
+    s/\bdeco\b/déco/g;
     s/socie/socié/g;
     s/([aA])suncion/$1sunción/g;
     s/([aA])ttache/$1ttaché/g;
@@ -631,7 +666,7 @@ sub to_latin1($) {
     s/Jerome/Jérôme/g;
     s/Kodaly/Kodály/g;
     s/örzitiv/oerzitiv/g;
-    s/nique/niqué/g;
+    #s/nique/niqué/g;
     s/Kalman/Kálmán/g;
     s/iberte/iberté/g;
     s/Egalite/Égalité/g;
@@ -687,7 +722,7 @@ sub to_latin1($) {
 	s/Serac/Sérac/g;
 	s/Sevres/Sévres/g;
 	s/Stassfurt/Staßfurt/g;
-	s/Tromsö/Tromsø/g;
+	s/(?<=Troms)(ö|oe)/ø/g;
 	s/Trouvere/Trouvère/g;
 	s/Tönder/Tønder/g;
 	s/ariete/arieté/g;
@@ -814,11 +849,11 @@ sub to_latin1($) {
     s/großo/grosso/g;
     s/ktül/ktuel/g;
     s/(?<=nn)ü(?=lle)/ue/g;
-    s/jüz\b/juez/g;
+    s/(?<=[gj])ü(?=z\b)/ue/g;
     s/BDUe/BDÜ/g;
     s/nün\b/nuen/g;
-    s/gü(tt|rr)e/gue$1e/g;
-    s/Blü(?=chip|jean|movie)/Blue/g;
+    s/gü(?=(tt|rr)[ei])/gue/g;
+    s/(?<=\b[Bb]l)ü(?=(?!\w)|[bfgjp]|movie|stock|chip)/ue/g; # Blue- [cjb...] is untypical for german, blümen but is
     s/(?<=[Mm]en)ue/ü/g;
     s/Bünos/Buenos/g;
     s/Dengü/Dengue/g;
@@ -846,7 +881,7 @@ sub to_latin1($) {
     s/gürite/guerite/g;
     s/inünd/inuend/g;
     s/(?<=[Gg])ü(?=st)/ue/g;
-    s/Püblo/Pueblo/g;
+    s/(?<=[Pp])ü(?=blo)/ue/g;
     s/(?<=[Pp])ü(?=rto)/ue/g;
     s/Reü(?=[nv])/Reue/g;
     s/Samül/Samuel/g;
@@ -857,11 +892,42 @@ sub to_latin1($) {
     s/Ücker/Uecker/g;
     s/süll/suell/g;
     s/nnüll/nnuell/g;
-
+    s/(?<!\w)ä(?=ron)/ae/g;       # aeronautic e.g.
     s/\beinzüng/einzueng/g;
     s/\btü(?=s?t\b)/tue/g;
     s/Zeiß/Zeiss/g;          # I'm coming from Jena, Zeiss' hometown and that
                              # really looks better :-)
+    s/(?<=airma)ß/ss/g;
+    s/Däda/Daeda/g;
+    s/Büna/Buena/g;
+    s/(?<=can)ö/oe/g;        # english for "Kanu"
+    s/(canv|carc)aß/$1ass/g;      # english for "prüfend", ...
+    s/Caßandra/Cassandra/g;
+    s/Citr(oe|ö)n/Citroën/g; 
+    s/\bdämon\b/daemon/g;        # lowercase is wrong German (but not for "dämonenhaft"), thus it must be the english version
+    s/([A-ZÄÖÜ]*)(Ae|Oe|Ue)\b/$1$mutation{$2}/g;   # must be an abbreviation ending on Ä,Ö,Ü   
+    s/joß/joss/g;
+    s/Sußex/Sussex/g;
+    s/(?<![Oo])([Bb]|rh)oe\b/$1ö/g;   # ...-rrhö, Windbö, != Oboe
+    s/Malmoe/Malmö/g;
+    s/(fl|tr?)ünt\b/$1uent/g;
+    s/güse/guese/g;
+    s/(?<=[sh])ö(?=ver)/oe/g;       # whomsever, whoever
+    s/potatös/potatoes/g;
+    s/(?<=\b[fd])ü(?=[lt]\b)/ue/g;  # fuel, duel, duet, ...
+    s/Dreyfuß/Dreyfuss/g;
+    s/(?<=[Gg])ä(?=lic)/ae/g;
+    s/(?<=[Mm])ä(?=stro)/ae/g;
+    s/(?<=\b[dg])ö(?=s(\b|n))/oe/g;  # does, goes
+    s/minüt\b/minuet/g;
+    s/(?<=trespa)ß/ss/g;
+    s/N(oe|ö)l\b/Noël/g;
+    s/\bgüss\b/guess/g;
+    s/mutül/mutuel/g;
+    s/öil/oeil/g;
+    s/müzzi/muezzi/g;
+    s/pösy/poesy/g;
+    s/(?<=[Tt]omat)ö/oe/g;
     return $_;
 }
 
@@ -963,12 +1029,20 @@ but the price is that in some rare cases of words with multiple umlauts
 (like "Häkeltülle") some buggy conversions can occur.
 Please tell me if you find such words.
 
+The C<to_latin1> method also has some knowledge to work with some basic English.
+(So that some words don't confuse everything and you can
+also use some code snippets in your text).
+However, it is very recommended to use American English instead of British English.
+Espeically many plural forms (ending on "oes") are hard to handle,
+and often I decided not to implement an extra rule as
+it is a C<Lingua::DE::*> module and not an English one.
+
 =head1 TESTS
 
 The test scripts (called by e.g. C<make test>) need a long time.
 The reason is that I test it with a huge german word list. Normally you can skip
 this test if there is no failing in the first few seconds. However, the tests
-also have a progress bar, so that you can see the advances :-)
+also have a progress bar (either a Term::ProgressBar if installed or just a simple text output), so that you can see the advances :-)
 
 There are two major reasons why I added so many words to test even to the CPAN
 release. On the one hand, I wanted to give you a chance to detect strange
@@ -979,6 +1053,10 @@ On the other hand, I also wanted you to give
 a chance to detect yourself whether a C<to_latin1> result is a bug or a feature.
 (Just search through the content of the test files to determine whether a
 strange looking word is tested for and thus wanted).
+
+There is also a test with common 1000 English words (having an ae,oe,ue or ss inside),
+as German is nowadays often mixed with a lot of them,
+and this module should not be confused with them.
 
 =head1 AUTHOR
 

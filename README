@@ -1,4 +1,4 @@
-Lingua/DE/ASCII version 0.06
+Lingua/DE/ASCII version 0.07
 ============================
 
 NAME
@@ -47,7 +47,10 @@ DEPENDENCIES
 This module requires these other modules and libraries:
 
 Test::More (only for testing)
-Term::ProgressBar (also for testing)
+
+If you want a nicer feeling when testing and waiting,
+you should also install
+Term::ProgressBar
 
 COPYRIGHT AND LICENCE
 

@@ -1,5 +1,14 @@
 Revision history for Perl extension Lingua::DE::ASCII.
 
+0.07  Thu May 13, 2003
+        - removed forced dependency of Term::ProgressBar
+          (allthough, it's still recommended)
+        - added common English words (with ae,oe,ue,ss) to the test data 
+          (created new dat file: 'english.dat')
+        - fixed wrong test schema
+          too less had been tested (because I have specified a wrong range)
+        - improved speed of to_latin1 method
+
 0.06  Sat May 10, 2003
         - fixed bug 
           "eventuell" became "eventuell" if any uppercase word was in

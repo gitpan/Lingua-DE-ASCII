@@ -3,38 +3,54 @@
 use strict;
 use warnings;
 
-use Term::ProgressBar;
 use Test::More tests => 1;
 use Lingua::DE::ASCII;
 
 use constant CHUNK_SIZE => 250;
 
-local @ARGV = map {"t/words_with_$_.dat"} 
-    ("foreign", "ä", "ö", "ü", "ß", "ae", "oe", "ue", "ss");
+local @ARGV = ( 
+    "t/english.dat",
+    map {"t/words_with_$_.dat"} 
+    ("foreign", "ä", "ö", "ü", "ß", "ae", "oe", "ue", "ss")
+);
 
 chomp( my @all_words = <> );
 
-my $progress    = Term::ProgressBar->new({
-    name  => 'Words testet from the big dictionary',
-    count => scalar(@all_words) / CHUNK_SIZE,
-    ETA   => 'linear'
-});
+my $progress    = eval {
+    require Term::ProgressBar;
+    Term::ProgressBar->new({
+       name  => 'Words testet from the big dictionary',
+       count => scalar(@all_words) / CHUNK_SIZE,
+       ETA   => 'linear'
+    });
+};
+my $last_perc = 0;
 
-foreach my $chunk (0 .. scalar(@all_words) / CHUNK_SIZE) {
+foreach my $chunk (0 .. (scalar(@all_words) / CHUNK_SIZE)) {
+
+    my @range = ($chunk * CHUNK_SIZE .. (($chunk+1) * CHUNK_SIZE)-1);
+    my @words = grep defined, @all_words[@range];
 
     # test each word in a random environment
     test_chunk_text(join "\n",
         map {join " ", $all_words[rand @all_words], $_, $all_words[rand @all_words]}
-            @all_words[$chunk .. $chunk+CHUNK_SIZE-1]
+            @words
     );
 
     # test each word following by itselfs to check
     # whether all internal regexps are working global
     test_chunk_text(join "\n",
-        map "$_ $_", @all_words[$chunk .. $chunk+CHUNK_SIZE-1]
+        map "$_ $_", @words
    );   
 
-    $progress->update($chunk);
+
+
+   $progress 
+       ? $progress->update($chunk)
+       : (     $last_perc < ($_ = int(100 * (CHUNK_SIZE * $chunk / @all_words))) 
+           and $last_perc = $_ 
+           and print STDERR "$_% "
+         );
 }
 
 sub test_chunk_text {
