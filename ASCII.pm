@@ -11,7 +11,7 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw(to_ascii to_latin1);
 our %EXPORT_TAGS = ( 'all' => [ @EXPORT ]);
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 our %ANSI_TO_ASCII_TRANSLITERATION = (qw(
         ¡ !
@@ -525,6 +525,7 @@ sub to_latin1($) {
             s/Maße/Masse/g;
             s/maß(?=el|ak|ig)/mass/g;
             s/\bmaß(?=en\w)/mass/g;
+            s/(ten)maß/$1mass/g; 
             s/((?:\b|$prefix)flo)ß/$1ss/g;
         }
         
@@ -552,7 +553,7 @@ sub to_latin1($) {
     s/Apero/Apéro/g;
     s/Aragon/Aragón/g;
     s/\bdeco\b/déco/g;
-    s/socie/socié/g;
+    s/socie(?=\b|s)/socié/g;
     s/([aA])suncion/$1sunción/g;
     s/([aA])ttache/$1ttaché/g;
     s/Balpare/Balparé/g;

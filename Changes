@@ -1,5 +1,10 @@
 Revision history for Perl extension Lingua::DE::ASCII.
 
+0.09  Fri Jun 27, 2003
+        - changed behaviour for words like
+            * "Studentmassen" (with ss instead of ﬂ)
+            * "society"       (in English way and not as French "sociÈty")
+
 0.08  Thu May 20, 2003
         - fixed bug "a language" => "‡ language"
         - changed behaviour for "loss" (engl.) != "loﬂ",
