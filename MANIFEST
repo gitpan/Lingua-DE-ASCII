@@ -4,4 +4,12 @@ Makefile.PL
 MANIFEST
 README
 t/1.t
-t/mutation_words.t
+t/foreign_words.t
+t/words_with_ä.t
+t/words_with_ö.t
+t/words_with_ü.t
+t/words_with_ß.t
+t/words_with_ae.t
+t/words_with_oe.t
+t/words_with_ue.t
+t/words_with_ss.t

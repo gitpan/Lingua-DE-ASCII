@@ -1,4 +1,4 @@
-Lingua/DE/ASCII version 0.01
+Lingua/DE/ASCII version 0.02
 ============================
 
 NAME
@@ -34,6 +34,9 @@ To install this module type the following:
    make
    make test
    make install
+
+The self test is very intensive,
+it may need up to 5 minutes as it tests with a huge german word list.
 
 DEPENDENCIES
 
