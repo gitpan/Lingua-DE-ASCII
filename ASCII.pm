@@ -11,7 +11,7 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw(to_ascii to_latin1);
 our %EXPORT_TAGS = ( 'all' => [ @EXPORT ]);
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 our %ANSI_TO_ASCII_TRANSLITERATION = (qw(
         ¡ !
@@ -374,6 +374,8 @@ sub to_latin1($) {
            [Ww]agen|
            [Ww]ohnungs|
            [Zz]wischen) tuer (?!isch)/$1tür/gx;
+
+        s/(?<=[a-zäöüß])ü(?=[A-ZÄÖÜ])/ue/g;  # e.g. "IssueType"
     }
 	
 	if (/ss/) {
@@ -1002,9 +1004,9 @@ to_latin1($string)
 
 =head1 BUGS
 
-That's only a stupid computer program, faced with a very hard ai problem.
-So there will be some words that will be always hard to retranslate from ascii 
-to latin1 encoding. A known example is the difference between "Maß(einheit)" and
+That's only a stupid computer program, faced with a very hard AI problem.
+So there will be some words that will be always hard to retranslate from ASCII 
+to Latin-1 encoding. A known example is the difference between "Maß(einheit)" and
 "Masseentropie" or similar. Another examples are "flösse" and "Flöße"
 or "(Der Schornstein) ruße" and "Russe", "Geheimtuer(isch)" and "Geheimtür", 
 "anzu-ecken" and "anzücken" or quite even a lonely "ss" or "ß". 
