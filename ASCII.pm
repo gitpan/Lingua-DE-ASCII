@@ -11,7 +11,7 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw(to_ascii to_latin1);
 our %EXPORT_TAGS = ( 'all' => [ @EXPORT ]);
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 my %ascii = (qw(
         À A
@@ -196,7 +196,7 @@ sub to_latin1($) {
            ae
            (?!rleb)                   # e.g. Ahaerlebnis
            (?!rreg[^i])               #      Malariaerreger
-           (?=\w)                     # no ä at the end of a word
+           (?=[\wß])                     # no ä at the end of a word
            (?!n\b)                    # even not if in plural
            (?!pid)                    # Choleraepidemie
            (?!in)                     # Kameraeinstellung
@@ -221,7 +221,7 @@ sub to_latin1($) {
               r[gz]|         # ...-särge, ...-ärzte
               c[kh]|         # ...-säcke
               n[dgk]e|         # ...-änderung, ...-änge, ... -sänke
-              [lh]e          #säle, ... sähe
+              [lhß]e          #säle, ... sähe, säße
           )
          /ae/gx; 
         
@@ -256,7 +256,6 @@ sub to_latin1($) {
 	 }
     
 	if (/[Uu]e/) {
-        die $_ if /ß/;
 	    # ue => ü, but take care for 'eue','äue', 'aue', 'que'
     	s/(?:(?<![oaäeAÄEqQzZ]) | 
         	 (?<=nde) | 
@@ -272,7 +271,7 @@ sub to_latin1($) {
            (?<![Ss]tat)              # Statue
            (?<!x)                    # Sexuelle
            ( [uU] e )
-           (?= [\w\-])                   # no ü at the end of a word
+           (?= [\wß\-])                   # no ü at the end of a word
 	       (?! i)                    # Zueilende - Ü-...
            (?! llst\w)                 # Spirituellste
          /$mutation{$1}/egx;
@@ -291,7 +290,7 @@ sub to_latin1($) {
                            i?[ns](nen)?)?\b)/$1ue$2/gx;
         s/($prefix t)ü(?=s?t\b|risch)/$1 ? "$1ue" : "$1ü"/gxe;  # zurücktuest, großtuerisch 
         s/grünz/gruenz/g;
-        s/(?<!en)ü(s?)(?!\w)/ue$1/g;   # Im deutschen enden keine Worte auf ü, bis auf Ausnahmen
+        s/(?<!en)ü(s?)(?![\wß])/ue$1/g;   # Im deutschen enden keine Worte auf ü, bis auf Ausnahmen
         s/zü(?!rich)([rs][befhioszö])/zue$1/g; # Zuerzählende != züricherisch
     
         s/([uU] e) (?=bt)/$mutation{$1}/egx;  # Übte
@@ -839,6 +838,8 @@ sub to_latin1($) {
 
     s/\beinzüng/einzueng/g;
     s/\btü(?=s?t\b)/tue/g;
+    s/Zeiß/Zeiss/g;          # I'm coming from Jena, Zeiss' hometown and that
+                             # really looks better :-)
     return $_;
 }
 
@@ -880,11 +881,14 @@ So there will be some words that will be always hard to retranslate from ascii
 to latin1 encoding. A known example is the difference between "Maß(einheit)" and
 "Masseentropie" or similar. Another examples are "flösse" and "Flöße"
 or "(Der Schornstein) ruße" and "Russe", "Geheimtuer(isch)" and "Geheimtür", 
-"anzu-ecken" and "anzücken". 
+"anzu-ecken" and "anzücken" or quite even a lonely "ss" or "ß". 
 Also, it's  hard to find the right spelling for the prefixes "miss-" or "miß-".
-In doubt I tried to use to more common word.
-I tried it with a huge list of german words, but please tell me if you find a 
-serious back-translation bug.
+In doubt I tried to use to more common word and in even still a doubt the
+program tries to be conservative, that means it prefers not to translate to an
+umlaut. Reason is that the text is still readable with one "ae","oe","ue" or
+"ss" to much, but a wrong "ä", "ö", "ü" or "ß" can make it very unreadable.
+
+I tried it with a huge list of german words, but please tell me if you find a bug.
 
 This module is intended for ANSI code that is e.g. different from windows coding.
 

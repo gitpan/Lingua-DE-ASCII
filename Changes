@@ -1,5 +1,12 @@
 Revision history for Perl extension Lingua::DE::ASCII.
 
+0.04  Mon Apr 28, 2003
+        - fixed bug: Module died if ue and ß had been in one string passed to
+          to_latin1
+        - added test: to_latin1 is tested with a lot of words containing an
+          [äöüÄÖÜ] and an ß, where the [äöüÄÖÜ] is translated to
+          ae/oe/ue/Ae/Oe/Ue and the ß is still an ß 
+
 0.03  Sam Apr 26 2003
         - fixed bug » and « had been simply removed,
 		  created a new test script for these case t/special_characters.t

@@ -15,9 +15,9 @@ my $non_ascii_chars = join("", map {chr} (128..255));
 while (<DATA>) {
     chomp;
     print STDERR "." if ($. % 5_000) == 1;
-  	my $ascii_text = to_ascii($_);  
-   	my $iso_text = to_latin1($ascii_text);
-   	$ascii_text !~ /[$non_ascii_chars]/o or diag("$_ => $ascii_text"),fail,exit;
+  	my $ascii_text       = to_ascii($_);  
+   	my $iso_text         = to_latin1($ascii_text);
+    $ascii_text !~ /[$non_ascii_chars]/o or diag("$_ => $ascii_text"),fail,exit;
     $iso_text eq $_                      or diag("$_ => $ascii_text => $iso_text"),fail,exit;
 }
 

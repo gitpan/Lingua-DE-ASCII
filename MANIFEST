@@ -14,3 +14,4 @@ t/words_with_ae.t
 t/words_with_oe.t
 t/words_with_ue.t
 t/words_with_ss.t
+t/words_with_umlaut_and_ß.t

@@ -14,10 +14,12 @@ my $non_ascii_chars = join("", map {chr} (128..255));
 
 while (<DATA>) {
     chomp;
-    my $ascii_text = to_ascii($_);  
-    my $iso_text = to_latin1($ascii_text);
+    my $ascii_text        = to_ascii($_);  
+    my $iso_text          = to_latin1($ascii_text);
+    my $iso_text_from_iso = to_latin1($_);
     $ascii_text !~ /[$non_ascii_chars]/o or diag("to_ascii:  $_ => $ascii_text"),fail,exit;
-    $iso_text eq $_                      or diag("to_latin1:\n$_ =>\n$ascii_text =>\n$iso_text"),fail,exit;
+    $iso_text          eq $_             or diag("to_latin1:\n$_ =>\n$ascii_text =>\n$iso_text"),fail,exit;
+    $iso_text_from_iso eq $_             or diag("to_latin1(latinstr):\n $_ => $iso_text_from_iso"),fail,exit;
 }
 
 ok("Special characters could be translated without errors");
@@ -35,3 +37,4 @@ Er sagte den Eltern etwas Verbindliches, so gut er es in der ersten Bestürzung a
 »Hätte der Bursch«, so schloss die Historie nutzanwendend, »auf der Universität etwas Rechtschaffenes gelernt, so wäre er nicht unter die Soldaten und dergleichen gegangen.«
 »Ich weiß nicht,« entgegnete die Tochter, »ob er auf der Universität fleißig gewesen; aber ich weiß, dass er wenigstens mit guten Herzen ging, sich für eine heilige Sache zu opfern.«
 »Komm mir doch nicht immer mit deiner heiligen Sache und dergleichen!« rief Herr Bantes.
+Grüßen -- hier ist nur wichtig, dass ein ue mit einem sz vorkommt, da dies einmal einem eingebauten Bug entsprach

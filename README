@@ -1,4 +1,4 @@
-Lingua/DE/ASCII version 0.03
+Lingua/DE/ASCII version 0.04
 ============================
 
 NAME
@@ -36,15 +36,16 @@ To install this module type the following:
    make install
 
 The self test is very intensive,
-it may need up to 5 minutes as it tests with a huge german word list.
+it may need up to 10 minutes as it tests with a huge german word list.
+If it is to long for, just look for the first few seconds, 
+if no error occurs up till then, it shouldn't happen in the remaining minutes and
+it should be O.K. to skip the remaining test.
 
 DEPENDENCIES
 
 This module requires these other modules and libraries:
 
 Test::More (only for testing)
-
-Furthermore it requires a (german) locale settings supporting ISO-Latin-1.
 
 COPYRIGHT AND LICENCE
 
