@@ -11,7 +11,7 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw(to_ascii to_latin1);
 our %EXPORT_TAGS = ( 'all' => [ @EXPORT ]);
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 my %ascii = (qw(
         À A
@@ -84,7 +84,10 @@ my %ascii = (qw(
 		µ ue
 		¶ P
 		· .
-		¹ ^1),
+		¹ ^1
+        » >>
+        « <<
+        ),
 	     ("´" => "'",
 	      "¸" => ",",
           "®" => "(R)",
@@ -476,6 +479,10 @@ sub to_latin1($) {
     s/\(R\)/®/g;
     s/\(C\)/©/g;
 
+    # special characters
+    s/<<(\D*?)>>/«$1»/g;    # if there are numbers between,
+    s/>>(\D*?)<</»$1«/g;    # it could be also a mathematical/physical equation
+
     # foreign words
     s/cademie/cadémie/g;
     s/rancais/rançais/g;
@@ -701,7 +708,7 @@ sub to_latin1($) {
     s/Angström/Ångström/g;
     s/Egalite/Égalité/g;
     s/(?<=[Ll]and)buße/busse/g;
-    s/a(?=\W+(?:condition|deux mains|fonds perdu|gogo|jour|la))/à/g;
+    s/\ba(?=\W+(?:condition|deux mains|fonds perdu|gogo|jour|la))/à/g;
     s/a discretion/à discrétion/g;
     s/(?<=[Bb]ai)ß(?=e)/ss/g;
     s/(?<=[Hh]au)ß(?=e)/ss/g;
@@ -810,6 +817,7 @@ sub to_latin1($) {
     s/tünte/tuente/g;
     s/tülle/tuelle/g;
     s/([\w äöü ÄÖÜ ß]+t)üll/$1 eq lc($1) ? "$1uell" : "$1üll"/gex; #eventuell != Häkeltüll    
+    s/Eventüll/Eventuell/g;
     s/Langü/Langue/g;
     s/Manül/Manuel/g;
     s/Migül/Miguel/g;

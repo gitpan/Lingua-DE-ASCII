@@ -5,6 +5,7 @@ MANIFEST
 README
 t/1.t
 t/foreign_words.t
+t/special_characters.t
 t/words_with_ä.t
 t/words_with_ö.t
 t/words_with_ü.t

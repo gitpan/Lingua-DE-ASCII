@@ -1,10 +1,9 @@
 Revision history for Perl extension Lingua::DE::ASCII.
 
-0.01  Mon Mar 24 2003
-	- original version; created by h2xs 1.20 with options
-		-XA -b5.6.0 Lingua::DE::ASCII
-        - with two methods: to_ascii and to_latin1
-        - tested with 200 000 german words with mutations(Umlaute)
+0.03  Sam Apr 26 2003
+        - fixed bug » and « had been simply removed,
+		  created a new test script for these case t/special_characters.t
+        - fixed bug "Eventuell" => "Eventüll"
 
 0.02  Wed Apr 23 2003
         - rearranged tests to get different test scripts
@@ -13,3 +12,10 @@ Revision history for Perl extension Lingua::DE::ASCII.
                * words with the critical letter combinations, separated for ae, ue, oe, ss
                * complete texts
         - tested with many more words
+
+0.01  Mon Mar 24 2003
+	- original version; created by h2xs 1.20 with options
+		-XA -b5.6.0 Lingua::DE::ASCII
+        - with two methods: to_ascii and to_latin1
+        - tested with 200 000 german words with mutations(Umlaute)
+
